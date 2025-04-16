@@ -20,7 +20,7 @@ class Movies {
                     Genre(14, "Fantasy")
                 ),
                 "https://www.minecraft.net",
-                "tt1234567"
+                "tt3566834"
             ),
             Movie(
                 2,
@@ -35,7 +35,7 @@ class Movies {
                     Genre(878, "Science Fiction")
                 ),
                 "https://marvel.com/captainamerica",
-                "tt8912936"
+                "tt14513804"
             )
         )
     }

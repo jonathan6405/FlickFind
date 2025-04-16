@@ -15,10 +15,15 @@ import coil.compose.AsyncImage
 import com.example.moviedb2025.models.Movie
 import com.example.moviedb2025.models.Genre
 import com.example.moviedb2025.utils.Constants
+import android.content.Intent
+import androidx.compose.material3.Button
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
 
 @Composable
 fun MovieDetailScreen(movie: Movie,
                       modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     Column {
         Box {
             AsyncImage(
@@ -50,6 +55,29 @@ fun MovieDetailScreen(movie: Movie,
         Spacer(modifier = Modifier.size(8.dp))
 
         GenreList(genres = movie.genres)
+        Spacer(modifier = Modifier.size(16.dp))
+
+        Button(onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, movie.homepage.toUri())
+            context.startActivity(intent)
+        }) {
+            Text(text = "Go to Homepage")
+        }
+
+        Button(onClick = {
+            val imdbUrl = "https://www.imdb.com/title/${movie.imdb_id}"
+            val intent = Intent(Intent.ACTION_VIEW, imdbUrl.toUri())
+            intent.setPackage("com.imdb.mobile") //tells Android to prefer the IMDb app
+            try {
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                // IMDb app not installed, open in browser instead
+                val fallbackIntent = Intent(Intent.ACTION_VIEW, imdbUrl.toUri())
+                context.startActivity(fallbackIntent)
+            }
+        }) {
+            Text("View on IMDb")
+        }
     }
 }
 
