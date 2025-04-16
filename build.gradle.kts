@@ -4,3 +4,10 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
 }
+
+val localProperties = rootProject.file("local.properties")
+val properties = java.util.Properties()
+properties.load(localProperties.inputStream())
+
+val tmdbApiKey: String = properties.getProperty("TMDB_API_KEY") ?: ""
+

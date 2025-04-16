@@ -1,7 +1,7 @@
 @file:kotlin.OptIn(ExperimentalMaterial3Api::class)
 @file:Suppress("INFERRED_TYPE_VARIABLE_INTO_EMPTY_INTERSECTION_WARNING")
 
-package com.example.myapplication0.ui.screens
+package com.example.moviedb2025.ui.screens
 
 import androidx.annotation.OptIn
 import androidx.annotation.StringRes
@@ -34,9 +34,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.moviedb2025.R
 import com.example.moviedb2025.database.Movies
 import com.example.moviedb2025.models.Movie
-import com.example.moviedb2025.ui.screens.MovieDetailScreen
-import com.example.moviedb2025.ui.screens.MovieListItemCard
-import com.example.moviedb2025.ui.screens.MovieListScreen
 import com.example.moviedb2025.ui.theme.MovieDB2025Theme
 import com.example.moviedb2025.viewmodel.MovieDBViewModel
 

@@ -1,8 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Read from local.properties
+val localProperties = rootProject.file("local.properties")
+val properties = Properties().apply {
+    load(localProperties.inputStream())
+}
+
+val tmdbApiKey: String = properties.getProperty("TMDB_API_KEY") ?: ""
+
 
 android {
     namespace = "com.example.moviedb2025"
@@ -19,7 +30,11 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
+        }
+        getByName("release") {
+            buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -35,8 +50,11 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
+
+
 }
 
 dependencies {
