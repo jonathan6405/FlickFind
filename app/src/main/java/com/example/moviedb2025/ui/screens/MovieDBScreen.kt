@@ -33,6 +33,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.moviedb2025.R
 import com.example.moviedb2025.database.Movies
+import com.example.moviedb2025.models.Genre
 import com.example.moviedb2025.models.Movie
 import com.example.moviedb2025.ui.theme.MovieDB2025Theme
 import com.example.moviedb2025.viewmodel.MovieDBViewModel
@@ -40,7 +41,8 @@ import com.example.moviedb2025.viewmodel.MovieDBViewModel
 
 enum class MovieDBScreen(@StringRes val title: Int){
     List(title = R.string.app_name),
-    Detail(title = R.string.movie_detail)
+    Detail(title = R.string.movie_detail),
+    Third(title = R.string.third_screen)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,13 +103,18 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
                     onMovieListItemClicked = { movie ->
                         viewModel.setSelectedMovie(movie)
                         navController.navigate(MovieDBScreen.Detail.name)
-                    }, modifier = Modifier.fillMaxSize().padding(16.dp))
+                    },
+                    navController = navController, //Added NavController
+                    modifier = Modifier.fillMaxSize().padding(16.dp))
             }
             composable(route = MovieDBScreen.Detail.name){
                 uiState.selectedMovie?.let { movie ->
                     MovieDetailScreen(movie = movie,
                         modifier = Modifier)
                 }
+            }
+            composable(route = MovieDBScreen.Third.name) {
+                ThirdScreen()
             }
         }
 
@@ -124,9 +131,16 @@ fun GreetingPreview() {
                 2,
                 "Captain America: Brave New World",
                 "/pzIddUEMWhWzfvLI3TwxUG2wGoi.jpg",
-                "/gsQJOfeW45KLiQeEIsom94QPQwb.jpg",
+                "/ce3prrjh9ZehEl5JinNqr4jIeaB.jpg",
                 "2025-02-12",
-                "When a group of radical activists take over an energy company's annual gala, seizing 300 hostages, an ex-soldier turned window cleaner suspended 50 storeys up on the outside of the building must save those trapped inside, including her younger brother."
+                "After meeting with newly elected U.S. President Thaddeus Ross, Sam finds himself in the middle of an international incident. He must discover the reason behind a nefarious global plot before the true mastermind has the entire world seeing red.",
+                listOf(
+                    Genre(28, "Action"),
+                    Genre(53, "Thriller"),
+                    Genre(878, "Science Fiction")
+                ),
+                "https://marvel.com/captainamerica",
+                "tt8912936"
             ), {}
         )
     }

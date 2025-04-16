@@ -1,5 +1,6 @@
 package com.example.moviedb2025.ui.screens
 
+import androidx.navigation.NavController
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,10 +27,26 @@ import com.example.moviedb2025.utils.Constants
 fun MovieListScreen(
     movieList: List<Movie>,
     onMovieListItemClicked: (Movie) -> Unit,
-    modifier: Modifier = Modifier) {
-    LazyColumn(modifier = modifier) {
-        items(movieList) { movie ->
-            MovieListItemCard(movie = movie, onMovieListItemClicked, modifier = Modifier.padding(8.dp))
+    navController: NavController, // Added NavController
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.padding(16.dp)) {
+        androidx.compose.material3.Button(
+            onClick = { navController.navigate(MovieDBScreen.Third.name) }
+        ) {
+            Text("Go to Third Screen")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn {
+            items(movieList) { movie ->
+                MovieListItemCard(
+                    movie = movie,
+                    onMovieListItemClicked,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
         }
     }
 }

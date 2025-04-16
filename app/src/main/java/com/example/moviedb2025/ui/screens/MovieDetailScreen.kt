@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.moviedb2025.models.Movie
+import com.example.moviedb2025.models.Genre
 import com.example.moviedb2025.utils.Constants
 
 @Composable
@@ -48,5 +49,20 @@ fun MovieDetailScreen(movie: Movie,
         )
         Spacer(modifier = Modifier.size(8.dp))
 
+        GenreList(genres = movie.genres)
+    }
+}
+
+@Composable
+fun GenreList(genres: List<Genre>, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = "Genres:",
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(modifier = Modifier.size(4.dp))
+        genres.forEach { genre ->
+            Text(text = "• ${genre.name}", style = MaterialTheme.typography.bodyMedium)
+        }
     }
 }
