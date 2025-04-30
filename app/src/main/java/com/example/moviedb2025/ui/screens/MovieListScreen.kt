@@ -39,6 +39,14 @@ fun MovieListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        androidx.compose.material3.Button(
+            onClick = { navController.navigate(MovieDBScreen.Grid.name) }
+        ) {
+            Text("Go to Grid View")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         LazyColumn {
             items(movieList) { movie ->
                 MovieListItemCard(

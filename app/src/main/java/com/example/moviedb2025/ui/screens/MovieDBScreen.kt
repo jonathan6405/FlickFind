@@ -42,7 +42,8 @@ import com.example.moviedb2025.viewmodel.MovieDBViewModel
 enum class MovieDBScreen(@StringRes val title: Int){
     List(title = R.string.app_name),
     Detail(title = R.string.movie_detail),
-    Third(title = R.string.third_screen)
+    Third(title = R.string.third_screen),
+    Grid(title = R.string.grid_screen)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,6 +116,15 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
             }
             composable(route = MovieDBScreen.Third.name) {
                 ThirdScreen()
+            }
+            composable(route = MovieDBScreen.Grid.name) {
+                MovieGridScreen(
+                    movieList = Movies().getMovies(),
+                    onMovieClicked = { movie ->
+                        viewModel.setSelectedMovie(movie)
+                        navController.navigate(MovieDBScreen.Detail.name)
+                    }
+                )
             }
         }
 
