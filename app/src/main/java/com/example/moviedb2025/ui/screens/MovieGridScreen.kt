@@ -11,14 +11,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.moviedb2025.models.Movie
+import com.example.moviedb2025.models.MovieSimple
 import com.example.moviedb2025.utils.Constants
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun MovieGridScreen(
-    movieList: List<Movie>,
-    onMovieClicked: (Movie) -> Unit,
+    movieList: List<MovieSimple>,
+    onMovieClicked: (MovieSimple) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    LaunchedEffect(movieList) {
+        println("MovieGridScreen received ${movieList.size} movies")
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2), //This changes amount of columns, set to 2 for now
         modifier = modifier.padding(8.dp)
@@ -29,7 +35,7 @@ fun MovieGridScreen(
                 onClick = { onMovieClicked(movie) }
             ) {
                 AsyncImage(
-                    model = Constants.POSTER_IMAGE_BASE_URL + Constants.POSTER_IMAGE_BASE_WIDTH + movie.posterPath,
+                    model = Constants.POSTER_IMAGE_BASE_URL + Constants.POSTER_IMAGE_BASE_WIDTH + movie.poster_path,
                     contentDescription = movie.title,
                     modifier = Modifier.padding(8.dp)
                 )

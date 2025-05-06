@@ -1,57 +1,68 @@
 package com.example.moviedb2025.ui.screens
 
 import androidx.navigation.NavController
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.moviedb2025.models.Movie
+import com.example.moviedb2025.models.MovieSimple
 import com.example.moviedb2025.utils.Constants
+import com.example.moviedb2025.viewmodel.MovieDBViewModel
+import com.example.moviedb2025.BuildConfig
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun MovieListScreen(
-    movieList: List<Movie>,
-    onMovieListItemClicked: (Movie) -> Unit,
-    navController: NavController, // Added NavController
-    modifier: Modifier = Modifier
+    navController: NavController, // Kept for navigation
+    modifier: Modifier = Modifier,
+    viewModel: MovieDBViewModel = viewModel(),
+    onMovieListItemClicked: (MovieSimple) -> Unit = {
+        viewModel.setSelectedMovieSimple(it)
+    }
 ) {
+    val nowPlayingMovies by viewModel.nowPlaying.collectAsStateWithLifecycle()
+
+    // Fetch movies once when screen loads
+    LaunchedEffect(Unit) {
+        viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY)
+    }
+
+    val navigateToDetail by viewModel.navigateToDetail.collectAsStateWithLifecycle()
+
+    LaunchedEffect(navigateToDetail) {
+        if (navigateToDetail) {
+            navController.navigate(MovieDBScreen.Detail.name)
+            viewModel.onNavigatedToDetail()
+        }
+    }
+
+
     Column(modifier = modifier.padding(16.dp)) {
-        androidx.compose.material3.Button(
-            onClick = { navController.navigate(MovieDBScreen.Third.name) }
-        ) {
+        Button(onClick = { navController.navigate(MovieDBScreen.Third.name) }) {
             Text("Go to Third Screen")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        androidx.compose.material3.Button(
-            onClick = { navController.navigate(MovieDBScreen.Grid.name) }
-        ) {
+        Button(onClick = { navController.navigate(MovieDBScreen.Grid.name) }) {
             Text("Go to Grid View")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
-            items(movieList) { movie ->
+            items(nowPlayingMovies) { movieSimple ->
                 MovieListItemCard(
-                    movie = movie,
-                    onMovieListItemClicked,
+                    movieSimple = movieSimple,
+                    onMovieListItemClicked = onMovieListItemClicked,
                     modifier = Modifier.padding(8.dp)
                 )
             }
@@ -59,47 +70,47 @@ fun MovieListScreen(
     }
 }
 
-
 @Composable
-fun MovieListItemCard(movie: Movie,
-                      onMovieListItemClicked: (Movie) -> Unit,
-                      modifier: Modifier = Modifier) {
-    Card(modifier = modifier,
-        onClick = {
-            onMovieListItemClicked(movie)
-        } )
-    {
+fun MovieListItemCard(
+    movieSimple: MovieSimple,
+    onMovieListItemClicked: (MovieSimple) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        onClick = { onMovieListItemClicked(movieSimple) }
+    ) {
         Row {
             Box {
                 AsyncImage(
-                    model = Constants.POSTER_IMAGE_BASE_URL + Constants.POSTER_IMAGE_BASE_WIDTH + movie.posterPath,
-                    contentDescription = movie.title,
-                    modifier = modifier
+                    model = Constants.POSTER_IMAGE_BASE_URL + Constants.POSTER_IMAGE_BASE_WIDTH + movieSimple.poster_path,
+                    contentDescription = movieSimple.title,
+                    modifier = Modifier
                         .width(92.dp)
                         .height(138.dp),
                     contentScale = ContentScale.Crop
                 )
             }
-            Column {
+            Column(modifier = Modifier.padding(8.dp)) {
                 Text(
-                    text = movie.title,
+                    text = movieSimple.title,
                     style = MaterialTheme.typography.headlineSmall
                 )
-                Spacer(modifier = androidx.compose.ui.Modifier.size(8.dp))
+                Spacer(modifier = Modifier.size(8.dp))
 
                 Text(
-                    text = movie.releaseDate,
+                    text = movieSimple.release_date,
                     style = MaterialTheme.typography.bodySmall
                 )
-                Spacer(modifier = androidx.compose.ui.Modifier.size(8.dp))
+                Spacer(modifier = Modifier.size(8.dp))
 
                 Text(
-                    text = movie.overview,
+                    text = movieSimple.overview,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = androidx.compose.ui.Modifier.size(8.dp))
+                Spacer(modifier = Modifier.size(8.dp))
             }
         }
     }

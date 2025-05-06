@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.moviedb2025.models.Movie
+import com.example.moviedb2025.models.MovieSimple
 import com.example.moviedb2025.models.Genre
 import com.example.moviedb2025.utils.Constants
 import android.content.Intent
@@ -38,69 +39,88 @@ import androidx.media3.ui.PlayerView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-
+import androidx.compose.runtime.LaunchedEffect
+import android.util.Log
 
 
 
 @Composable
-fun MovieDetailScreen(movie: Movie,
-                      modifier: Modifier = Modifier) {
+fun MovieDetailScreen(movie: MovieSimple, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val viewModel: MovieDBViewModel = viewModel()
-    val reviews by viewModel.reviews.collectAsStateWithLifecycle()
 
+
+    // Fetch the full movie details based on the MovieSimple's ID
+    LaunchedEffect(movie.id) {
+        viewModel.fetchMovieDetails(movie.id, BuildConfig.TMDB_API_KEY)
+    }
+
+    // Get the detailed movie from state
+    val detailedMovie by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val selectedMovie = detailedMovie.selectedMovie
+
+    //Some debugging
+    Log.d("MovieDetailScreen", "Movie ID: ${movie.id}")
+    Log.d("MovieDetailScreen", "Selected movie in state: ${selectedMovie?.title}")
+
+    if (selectedMovie == null) {
+        Text("Loading movie details...", modifier = modifier.padding(16.dp))
+        return
+    }
+
+
+    val reviews by viewModel.reviews.collectAsStateWithLifecycle()
+    val videos by viewModel.videos.collectAsStateWithLifecycle()
 
     Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState()) //Enable vertical scrolling for details scree
+        modifier = modifier.verticalScroll(rememberScrollState())
     ) {
         Box {
             AsyncImage(
-                model = Constants.BACKDROP_IMAGE_BASE_URL + Constants.BACKDROP_IMAGE_BASE_WIDTH + movie.backdropPath,
-                contentDescription = movie.title,
-                modifier = Modifier, //complete weight
+                model = Constants.BACKDROP_IMAGE_BASE_URL + Constants.BACKDROP_IMAGE_BASE_WIDTH + selectedMovie.backdrop_path,
+                contentDescription = selectedMovie.title,
+                modifier = Modifier,
                 contentScale = ContentScale.Crop
             )
         }
 
         Text(
-            text = movie.title,
+            text = selectedMovie.title,
             style = MaterialTheme.typography.headlineSmall
         )
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = movie.releaseDate,
+            text = selectedMovie.release_date,
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(modifier = Modifier.size(8.dp))
 
         Text(
-            text = movie.overview,
+            text = selectedMovie.overview,
             style = MaterialTheme.typography.bodySmall,
             overflow = TextOverflow.Ellipsis
-
         )
         Spacer(modifier = Modifier.size(8.dp))
 
-        GenreList(genres = movie.genres)
+        GenreList(genres = selectedMovie.genres)
         Spacer(modifier = Modifier.size(16.dp))
 
         Button(onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, movie.homepage.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, selectedMovie.homepage.toUri())
             context.startActivity(intent)
         }) {
             Text(text = "Go to Homepage")
         }
 
         Button(onClick = {
-            val imdbUrl = "https://www.imdb.com/title/${movie.imdb_id}"
+            val imdbUrl = "https://www.imdb.com/title/${selectedMovie.imdb_id}"
             val intent = Intent(Intent.ACTION_VIEW, imdbUrl.toUri())
-            intent.setPackage("com.imdb.mobile") //tells Android to prefer the IMDb app
+            intent.setPackage("com.imdb.mobile")
             try {
                 context.startActivity(intent)
             } catch (e: Exception) {
-                // IMDb app not installed, open in browser instead
                 val fallbackIntent = Intent(Intent.ACTION_VIEW, imdbUrl.toUri())
                 context.startActivity(fallbackIntent)
             }
@@ -109,13 +129,10 @@ fun MovieDetailScreen(movie: Movie,
         }
 
         Button(onClick = {
-            viewModel.fetchReviews(movie.id, BuildConfig.TMDB_API_KEY)
+            viewModel.fetchReviews(selectedMovie.id, BuildConfig.TMDB_API_KEY)
         }) {
             Text("View Reviews")
         }
-
-        Spacer(modifier = Modifier.size(16.dp))
-
 
         LazyRow {
             items(reviews) { review: Review ->
@@ -124,7 +141,7 @@ fun MovieDetailScreen(movie: Movie,
         }
 
         Button(onClick = {
-            viewModel.fetchVideos(movie.id, BuildConfig.TMDB_API_KEY)
+            viewModel.fetchVideos(selectedMovie.id, BuildConfig.TMDB_API_KEY)
         }) {
             Text("Watch Trailer")
         }

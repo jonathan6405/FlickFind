@@ -35,8 +35,12 @@ import com.example.moviedb2025.R
 import com.example.moviedb2025.database.Movies
 import com.example.moviedb2025.models.Genre
 import com.example.moviedb2025.models.Movie
+import com.example.moviedb2025.models.MovieSimple
 import com.example.moviedb2025.ui.theme.MovieDB2025Theme
 import com.example.moviedb2025.viewmodel.MovieDBViewModel
+import androidx.compose.runtime.LaunchedEffect
+import com.example.moviedb2025.BuildConfig
+import android.util.Log
 
 
 enum class MovieDBScreen(@StringRes val title: Int){
@@ -45,6 +49,7 @@ enum class MovieDBScreen(@StringRes val title: Int){
     Third(title = R.string.third_screen),
     Grid(title = R.string.grid_screen)
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,6 +77,8 @@ fun MovieDBAppBar(
         }
     )
 }
+
+
 @Composable
 fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
                navController: NavHostController = rememberNavController()
@@ -81,6 +88,11 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
     val currentScreen = MovieDBScreen.valueOf(
         backStackEntity?.destination?.route ?: MovieDBScreen.List.name
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY)
+    }
+
 
     Scaffold(
         topBar = {
@@ -100,16 +112,18 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
         ){
             composable(route = MovieDBScreen.List.name){
                 MovieListScreen(
-                    movieList = Movies().getMovies(),
-                    onMovieListItemClicked = { movie ->
-                        viewModel.setSelectedMovie(movie)
+                    onMovieListItemClicked = { movieSimple ->
+                        viewModel.setSelectedMovieSimple(movieSimple)
                         navController.navigate(MovieDBScreen.Detail.name)
                     },
-                    navController = navController, //Added NavController
-                    modifier = Modifier.fillMaxSize().padding(16.dp))
+                    navController = navController,
+                    modifier = Modifier.fillMaxSize().padding(16.dp)
+                )
+
             }
             composable(route = MovieDBScreen.Detail.name){
-                uiState.selectedMovie?.let { movie ->
+                Log.d("MovieDBScreen", "Navigating to detail screen with movieSimple: ${uiState.selectedMovieSimple?.title}")
+                uiState.selectedMovieSimple?.let { movie ->
                     MovieDetailScreen(movie = movie,
                         modifier = Modifier)
                 }
@@ -119,9 +133,9 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
             }
             composable(route = MovieDBScreen.Grid.name) {
                 MovieGridScreen(
-                    movieList = Movies().getMovies(),
-                    onMovieClicked = { movie ->
-                        viewModel.setSelectedMovie(movie)
+                    movieList = uiState.movieList,
+                    onMovieClicked = { movieSimple ->
+                        viewModel.setSelectedMovieSimple(movieSimple)
                         navController.navigate(MovieDBScreen.Detail.name)
                     }
                 )
@@ -129,29 +143,5 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
         }
 
 
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MovieDB2025Theme {
-        MovieListItemCard(
-            movie = Movie(
-                2,
-                "Captain America: Brave New World",
-                "/pzIddUEMWhWzfvLI3TwxUG2wGoi.jpg",
-                "/ce3prrjh9ZehEl5JinNqr4jIeaB.jpg",
-                "2025-02-12",
-                "After meeting with newly elected U.S. President Thaddeus Ross, Sam finds himself in the middle of an international incident. He must discover the reason behind a nefarious global plot before the true mastermind has the entire world seeing red.",
-                listOf(
-                    Genre(28, "Action"),
-                    Genre(53, "Thriller"),
-                    Genre(878, "Science Fiction")
-                ),
-                "https://marvel.com/captainamerica",
-                "tt8912936"
-            ), {}
-        )
     }
 }
