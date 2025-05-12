@@ -14,8 +14,11 @@ import com.example.moviedb2025.network.RetrofitInstance
 import kotlinx.coroutines.launch
 import android.util.Log
 import com.example.moviedb2025.models.MovieSimple
+import com.example.moviedb2025.repository.MovieRepository
 
-class MovieDBViewModel : ViewModel() {
+class MovieDBViewModel(
+    private val repository: MovieRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(MovieDBUIState())
     val uiState: StateFlow<MovieDBUIState> = _uiState.asStateFlow()
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
@@ -71,6 +74,13 @@ class MovieDBViewModel : ViewModel() {
 
     fun fetchNowPlayingMovies(apiKey: String) {
         viewModelScope.launch {
+            repository.refreshMovies(apiKey)
+        }
+    }
+
+/*
+    fun fetchNowPlayingMovies(apiKey: String) {
+        viewModelScope.launch {
             try {
                 val response = RetrofitInstance.api.getNowPlayingMovies(apiKey = apiKey)
                 _nowPlaying.value = response.results
@@ -80,7 +90,7 @@ class MovieDBViewModel : ViewModel() {
             }
         }
     }
-
+*/
     fun fetchMovieDetails(movieId: Long, apiKey: String) {
         viewModelScope.launch {
             try {
