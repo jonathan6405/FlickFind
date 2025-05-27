@@ -31,6 +31,13 @@ interface TMDBApiService {
         @Query("page") page: Int = 1,
         @Query("api_key") apiKey: String
     ): NowPlayingResponse
+    //Getting a list of top rated movies
+    @GET("movie/top_rated")
+    suspend fun getTopRatedMovies(
+        @Query("language") language: String = "en-US",
+        @Query("page") page: Int = 1,
+        @Query("api_key") apiKey: String
+    ): NowPlayingResponse //Reusing the same response model here, since it's compatible
     //Get details for specific movie
     @GET("movie/{movie_id}")
     suspend fun getMovieDetails(

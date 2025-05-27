@@ -41,13 +41,16 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import android.util.Log
-
+import com.example.moviedb2025.viewmodel.MovieDBViewModelFactory
 
 
 @Composable
 fun MovieDetailScreen(movie: MovieSimple, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val viewModel: MovieDBViewModel = viewModel()
+    val context = LocalContext.current.applicationContext
+    val viewModel: MovieDBViewModel = viewModel(
+        factory = MovieDBViewModelFactory(context)
+    )
+
 
 
     // Fetch the full movie details based on the MovieSimple's ID

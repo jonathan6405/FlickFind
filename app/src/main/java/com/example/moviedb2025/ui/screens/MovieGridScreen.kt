@@ -14,6 +14,15 @@ import com.example.moviedb2025.models.Movie
 import com.example.moviedb2025.models.MovieSimple
 import com.example.moviedb2025.utils.Constants
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviedb2025.viewmodel.MovieDBViewModel
+import com.example.moviedb2025.viewmodel.MovieDBViewModelFactory
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.getValue
+
+
+
 
 @Composable
 fun MovieGridScreen(
@@ -26,7 +35,7 @@ fun MovieGridScreen(
     }
 
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), //This changes amount of columns, set to 2 for now
+        columns = GridCells.Fixed(2),
         modifier = modifier.padding(8.dp)
     ) {
         items(movieList) { movie ->

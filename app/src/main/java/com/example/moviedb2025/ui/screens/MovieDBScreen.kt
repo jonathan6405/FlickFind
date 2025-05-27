@@ -32,7 +32,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.moviedb2025.R
-import com.example.moviedb2025.database.Movies
 import com.example.moviedb2025.models.Genre
 import com.example.moviedb2025.models.Movie
 import com.example.moviedb2025.models.MovieSimple
@@ -41,6 +40,9 @@ import com.example.moviedb2025.viewmodel.MovieDBViewModel
 import androidx.compose.runtime.LaunchedEffect
 import com.example.moviedb2025.BuildConfig
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.moviedb2025.viewmodel.MovieDBViewModelFactory
 
 
 enum class MovieDBScreen(@StringRes val title: Int){
@@ -80,8 +82,11 @@ fun MovieDBAppBar(
 
 
 @Composable
-fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
-               navController: NavHostController = rememberNavController()
+fun MovieDbApp(
+    viewModel: MovieDBViewModel = viewModel(
+        factory = MovieDBViewModelFactory(LocalContext.current.applicationContext)
+    ),
+    navController: NavHostController = rememberNavController()
 ) {
     val backStackEntity by navController.currentBackStackEntryAsState()
 
@@ -89,8 +94,9 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
         backStackEntity?.destination?.route ?: MovieDBScreen.List.name
     )
 
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
-        viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY)
+        viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY, context)
     }
 
 
@@ -132,6 +138,7 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
                 ThirdScreen()
             }
             composable(route = MovieDBScreen.Grid.name) {
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 MovieGridScreen(
                     movieList = uiState.movieList,
                     onMovieClicked = { movieSimple ->
@@ -140,6 +147,7 @@ fun MovieDbApp(viewModel: MovieDBViewModel = viewModel(),
                     }
                 )
             }
+
         }
 
 

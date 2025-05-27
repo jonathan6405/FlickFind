@@ -18,22 +18,47 @@ import com.example.moviedb2025.utils.Constants
 import com.example.moviedb2025.viewmodel.MovieDBViewModel
 import com.example.moviedb2025.BuildConfig
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.example.moviedb2025.utils.ConnectionState
+import com.example.moviedb2025.utils.observeConnectivity
+import com.example.moviedb2025.viewmodel.MovieDBViewModelFactory
 
 @Composable
 fun MovieListScreen(
-    navController: NavController, // Kept for navigation
+    navController: NavController,
     modifier: Modifier = Modifier,
-    viewModel: MovieDBViewModel = viewModel(),
+    viewModel: MovieDBViewModel = viewModel(
+        factory = MovieDBViewModelFactory(LocalContext.current.applicationContext)
+    ),
     onMovieListItemClicked: (MovieSimple) -> Unit = {
         viewModel.setSelectedMovieSimple(it)
     }
 ) {
     val nowPlayingMovies by viewModel.nowPlaying.collectAsStateWithLifecycle()
 
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val movieList = uiState.movieList
+
     // Fetch movies once when screen loads
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
-        viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY)
+        viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY, context)
     }
+
+    //Observe connection status and trigger a reload if we go from offline to online
+    val connectionState = remember { mutableStateOf<ConnectionState?>(null) }
+    LaunchedEffect(Unit) {
+        observeConnectivity(context).collect { state ->
+            val wasOffline = viewModel.isOffline.value
+            connectionState.value = state
+            //If we go from offline to online, trigger a reload
+            if (state is ConnectionState.Available && wasOffline) {
+                viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY, context)
+            }
+        }
+    }
+
 
     val navigateToDetail by viewModel.navigateToDetail.collectAsStateWithLifecycle()
 
@@ -58,8 +83,23 @@ fun MovieListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Row {
+            Button(onClick = {
+                viewModel.fetchNowPlayingMovies(BuildConfig.TMDB_API_KEY, context)
+            }) {
+                Text("Now Playing")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = {
+                viewModel.fetchTopRatedMovies(BuildConfig.TMDB_API_KEY, context)
+            }) {
+                Text("Top Rated")
+            }
+        }
+
+
         LazyColumn {
-            items(nowPlayingMovies) { movieSimple ->
+            items(movieList) { movieSimple ->
                 MovieListItemCard(
                     movieSimple = movieSimple,
                     onMovieListItemClicked = onMovieListItemClicked,
@@ -68,6 +108,18 @@ fun MovieListScreen(
             }
         }
     }
+    val isOffline by viewModel.isOffline.collectAsState()
+
+    if (isOffline && !nowPlayingMovies.isEmpty()) {
+        Text("You are offline.", color = Color.Red)
+    }
+
+    if (isOffline && nowPlayingMovies.isEmpty()) {
+        Text("No data available for this list while offline.", color = Color.Red)
+    }
+
+
+
 }
 
 @Composable
